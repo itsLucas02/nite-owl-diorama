@@ -342,6 +342,22 @@ export default function App() {
         </div>
       </div>
 
+      {/* credit */}
+      <div className={`absolute bottom-4 left-4 hidden sm:block ${fade}`}>
+        <div className="hud-panel px-3 py-2 text-[11px] leading-none text-[#8fbfc8]">
+          CREATED BY{' '}
+          <a
+            href="https://aizzul.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onDoubleClick={(e) => e.stopPropagation()}
+            className="cursor-pointer text-[#ffd87a] transition-colors hover:text-[#ff2e88] focus-visible:text-[#ff2e88] focus-visible:outline-none"
+          >
+            AIZZUL LUQMAN
+          </a>
+        </div>
+      </div>
+
       {/* toast (also shown in clean mode, then gone) */}
       <div
         className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-500 ${
