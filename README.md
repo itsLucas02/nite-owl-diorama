@@ -39,8 +39,10 @@ each cycle rises over 7 seconds, falls back to silence over the last 7 seconds,
 and the loop point lands in that hush — so it breathes rather than cutting.
 
 Browsers refuse to play audio before a gesture, so the track starts on your first
-click or keypress; the page asks once if it was blocked. `A` mutes it without
-stopping the fade cycle. Volume automation uses `HTMLMediaElement.volume`, which
+click or keypress. Until that happens the control reads `AUDIO: TAP TO START`
+rather than claiming to be playing, and pressing `A` itself counts as that gesture
+(it starts the audio instead of muting what hasn't started yet). Once playing, `A`
+mutes and unmutes without stopping the fade cycle. Volume automation uses `HTMLMediaElement.volume`, which
 Safari on iOS ignores — the visuals are unaffected, the fades just don't apply there.
 
 ## URL parameters

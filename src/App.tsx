@@ -56,6 +56,7 @@ export default function App() {
   const [toast, setToast] = useState('');
   const ambRef = useRef<Ambience | null>(null);
   const [audioOn, setAudioOn] = useState(true);
+  const [audioBlocked, setAudioBlocked] = useState(false);
 
   const say = useCallback((msg: string) => {
     setToast(msg);
@@ -190,6 +191,18 @@ export default function App() {
   const toggleAudio = useCallback(() => {
     const amb = ambRef.current;
     if (!amb) return;
+    // Before playback has started, this press is the gesture that unlocks it;
+    // muting here would silence the very audio it just brought to life.
+    if (!amb.playing) {
+      void amb.start().then((ok) => {
+        if (!ok) return;
+        amb.setMuted(false);
+        setAudioOn(true);
+        setAudioBlocked(false);
+        say('AUDIO ON');
+      });
+      return;
+    }
     const muted = amb.toggleMute();
     setAudioOn(!muted);
     say(muted ? 'AUDIO OFF' : 'AUDIO ON');
@@ -201,9 +214,13 @@ export default function App() {
     const amb = new Ambience(`${import.meta.env.BASE_URL}cry-audio.mp3`);
     ambRef.current = amb;
     void amb.start().then((ok) => {
+      setAudioBlocked(!ok);
       if (!ok) say('CLICK OR PRESS ANY KEY FOR SOUND');
     });
-    const unlock = () => void amb.start();
+    const unlock = () =>
+      void amb.start().then((ok) => {
+        if (ok) setAudioBlocked(false);
+      });
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
     return () => {
@@ -313,7 +330,12 @@ export default function App() {
           <Key k="M" label={fill ? 'SCALE: FILL' : 'SCALE: INTEGER'} active={fill} onClick={toggleFill} />
           <Key k="P" label={paused ? 'RESUME' : 'PAUSE'} active={paused} onClick={togglePause} />
           <Key k="S" label="SAVE 1080P FRAME" onClick={snapshot} />
-          <Key k="A" label={audioOn ? 'AUDIO: ON' : 'AUDIO: OFF'} active={!audioOn} onClick={toggleAudio} />
+          <Key
+            k="A"
+            label={audioBlocked ? 'AUDIO: TAP TO START' : audioOn ? 'AUDIO: ON' : 'AUDIO: OFF'}
+            active={!audioOn}
+            onClick={toggleAudio}
+          />
         </div>
         <div className="mt-2 text-center text-[11px] leading-relaxed text-[#8fbfc8]" style={{ textShadow: '1px 1px 0 #000' }}>
           FOR CAPTURE: PRESS F THEN H · AT 1920×1080 THE SCENE IS AN EXACT 3× UPSCALE · OBS BROWSER SOURCE: ADD ?CLEAN=1

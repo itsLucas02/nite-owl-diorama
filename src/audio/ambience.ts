@@ -41,6 +41,15 @@ export class Ambience {
     return this.mutedFlag;
   }
 
+  /** True only once playback has actually started and not been paused. */
+  get playing(): boolean {
+    return this.started && !this.el.paused;
+  }
+
+  setMuted(muted: boolean) {
+    this.mutedFlag = muted;
+  }
+
   /** Browsers refuse playback until a gesture; resolves false when blocked. */
   start(): Promise<boolean> {
     if (this.started && !this.el.paused) return Promise.resolve(true);
