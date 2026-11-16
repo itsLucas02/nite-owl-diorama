@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "A pixel-art cyberpunk rooftop diorama in the rain, rendered in real time on a 640x360 canvas.",
   "license": "MIT",
+  "homepage": "https://nite-owl.pages.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/itsLucas02/nite-owl-diorama.git"
