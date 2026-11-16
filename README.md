@@ -30,6 +30,18 @@ continuous simulation, so no two minutes look alike.
 | `M` | Toggle scaling: integer (pixel-perfect) ↔ fill |
 | `P` | Pause / resume (also `Space`) |
 | `S` | Save the current frame as a 1920×1080 PNG |
+| `A` | Mute / unmute the ambience |
+
+## Audio
+
+A 4:17 ambient track loops underneath the scene. It never starts at full volume:
+each cycle rises over 7 seconds, falls back to silence over the last 7 seconds,
+and the loop point lands in that hush — so it breathes rather than cutting.
+
+Browsers refuse to play audio before a gesture, so the track starts on your first
+click or keypress; the page asks once if it was blocked. `A` mutes it without
+stopping the fade cycle. Volume automation uses `HTMLMediaElement.volume`, which
+Safari on iOS ignores — the visuals are unaffected, the fades just don't apply there.
 
 ## URL parameters
 
@@ -59,7 +71,7 @@ npm run preview   # serve the production build
 ```
 
 `vite-plugin-singlefile` inlines all JS and CSS, so the build is one HTML file with
-no external requests other than the Silkscreen webfont.
+no external requests other than the Silkscreen webfont and the ambience track.
 
 ## Deploy
 

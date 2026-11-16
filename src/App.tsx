@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Scene, W, H } from './scene/scene';
+import { Ambience } from './audio/ambience';
 
 const RAIN = [
   { name: 'DRIZZLE', v: 0.45 },
@@ -53,6 +54,8 @@ export default function App() {
   const [isFs, setIsFs] = useState(false);
   const [info, setInfo] = useState<Info>({ w: W * 3, h: H * 3, scale: 3, exact: true });
   const [toast, setToast] = useState('');
+  const ambRef = useRef<Ambience | null>(null);
+  const [audioOn, setAudioOn] = useState(true);
 
   const say = useCallback((msg: string) => {
     setToast(msg);
@@ -108,6 +111,7 @@ export default function App() {
         let dt = (now - last) / 1000;
         last = now;
         if (dt > 0.1) dt = 0.1; // tab was hidden: never jump, just carry on
+        ambRef.current?.update(dt);
         if (pausedRef.current) dt = 0;
         timeRef.current += dt;
         scene.frame(timeRef.current, dt);
@@ -183,6 +187,33 @@ export default function App() {
     say('SAVED 1920×1080 FRAME');
   }, [say]);
 
+  const toggleAudio = useCallback(() => {
+    const amb = ambRef.current;
+    if (!amb) return;
+    const muted = amb.toggleMute();
+    setAudioOn(!muted);
+    say(muted ? 'AUDIO OFF' : 'AUDIO ON');
+  }, [say]);
+
+  // ---- ambience: browsers block playback until a gesture, so the first
+  // click or keypress is what actually starts it.
+  useEffect(() => {
+    const amb = new Ambience(`${import.meta.env.BASE_URL}cry-audio.mp3`);
+    ambRef.current = amb;
+    void amb.start().then((ok) => {
+      if (!ok) say('CLICK OR PRESS ANY KEY FOR SOUND');
+    });
+    const unlock = () => void amb.start();
+    window.addEventListener('pointerdown', unlock);
+    window.addEventListener('keydown', unlock);
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      ambRef.current = null;
+      amb.dispose();
+    };
+  }, [say]);
+
   // ---- window events
   useEffect(() => {
     const wake = () => {
@@ -201,6 +232,7 @@ export default function App() {
       } else if (k === 'm') toggleFill();
       else if (k === 'r') cycleRain();
       else if (k === 's') snapshot();
+      else if (k === 'a') toggleAudio();
       else return;
       wake();
     };
@@ -226,7 +258,7 @@ export default function App() {
       document.removeEventListener('fullscreenchange', onFs);
       window.clearTimeout(idleTimer.current);
     };
-  }, [layout, toggleFs, toggleClean, togglePause, toggleFill, cycleRain, snapshot]);
+  }, [layout, toggleFs, toggleClean, togglePause, toggleFill, cycleRain, snapshot, toggleAudio]);
 
   const hidden = clean || idle;
   const fade = `transition-opacity duration-500 ${hidden ? 'pointer-events-none opacity-0' : 'opacity-100'}`;
@@ -281,6 +313,7 @@ export default function App() {
           <Key k="M" label={fill ? 'SCALE: FILL' : 'SCALE: INTEGER'} active={fill} onClick={toggleFill} />
           <Key k="P" label={paused ? 'RESUME' : 'PAUSE'} active={paused} onClick={togglePause} />
           <Key k="S" label="SAVE 1080P FRAME" onClick={snapshot} />
+          <Key k="A" label={audioOn ? 'AUDIO: ON' : 'AUDIO: OFF'} active={!audioOn} onClick={toggleAudio} />
         </div>
         <div className="mt-2 text-center text-[11px] leading-relaxed text-[#8fbfc8]" style={{ textShadow: '1px 1px 0 #000' }}>
           FOR CAPTURE: PRESS F THEN H · AT 1920×1080 THE SCENE IS AN EXACT 3× UPSCALE · OBS BROWSER SOURCE: ADD ?CLEAN=1
